@@ -1,0 +1,21 @@
+spin_manifest_version = "1"
+authors = ["Radu Matei <radu.matei@fermyon.com>"]
+description = ""
+name = "croc-hunter"
+trigger = { type = "http", base = "/" }
+version = "0.1.0"
+
+[[component]]
+source = { url = "https://github.com/fermyon/spin-fileserver/releases/download/v0.0.2/spin_static_fs.wasm", digest = "sha256:65456bf4e84cf81b62075e761b2b0afaffaef2d0aeda521b245150f76b96421b" }
+id = "fileserver"
+files = [{ source = "static", destination = "/" }]
+[component.trigger]
+route = "/static/..."
+
+[[component]]
+id = "croc-hunter"
+source = "croc-hunter.wasm"
+[component.trigger]
+route = "/"
+[component.build]
+command = "tinygo build -target=wasi -gc=leaking -o croc-hunter.wasm croc-hunter.go"

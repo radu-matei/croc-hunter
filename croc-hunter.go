@@ -2,28 +2,17 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
+
+	spin "github.com/fermyon/spin/sdk/go/http"
 )
 
-func main() {
-	httpListenAddr := flag.String("port", "8080", "HTTP Listen address.")
-
-	flag.Parse()
-
-	log.Println("Starting server...")
-
-	// point / at the handler function
-	http.HandleFunc("/", handler)
-
-	// serve static content from /static
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
-
-	log.Println("Server started. Listening on port " + *httpListenAddr)
-	log.Fatal(http.ListenAndServe(":"+*httpListenAddr, nil))
+func init() {
+	spin.Handle(func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r)
+	})
 }
 
 const (
@@ -43,9 +32,6 @@ const (
 				<canvas id="canvasHud" width="800" height="500" ></canvas>
 				<script src='/static/game2.js'></script>
 				<div class="details">
-				<strong>Hostname: </strong>%s<br>
-				<strong>Release: </strong>%s<br>
-				<strong>Commit: </strong>%s<br>
 				<strong>Powered By: </strong>%s<br>
 				</div>
 			</body>
@@ -60,24 +46,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Fatalf("could not get hostname: %s", err)
-	}
-
-	release := os.Getenv("WORKFLOW_RELEASE")
-	commit := os.Getenv("GIT_SHA")
 	powered := os.Getenv("POWERED_BY")
 
-	if release == "" {
-		release = "unknown"
-	}
-	if commit == "" {
-		commit = "not present"
-	}
 	if powered == "" {
-		powered = "deis"
+		powered = "spin"
 	}
 
-	fmt.Fprintf(w, html, hostname, release, commit, powered)
+	fmt.Fprintf(w, html, powered)
 }
+
+func main() {}

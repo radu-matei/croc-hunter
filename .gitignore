@@ -2,4 +2,5 @@
 vendor/
 *.tgz
 levo-charts
-croc-hunter
+main.wasm
+.spin/
