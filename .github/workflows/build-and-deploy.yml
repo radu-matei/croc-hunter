@@ -1,0 +1,38 @@
+name: Build and Push for GHCR and Fermyon Cloud
+on:
+  - push
+jobs:
+  bindle:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    name: Build and Deploy
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Spin
+        uses: fermyon/actions/spin/setup@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup TinyGo
+        uses: rajatjindal/setup-actions/tinygo@v0.0.1
+        id: setup
+        with:
+          version: "v0.27.0"
+
+      - name: Push to GHCR
+        uses: fermyon/actions/spin/push@v1
+        with:
+          registry: ghcr.io
+          registry_username: ${{ github.actor }}
+          registry_password: ${{ secrets.GITHUB_TOKEN }}
+          registry_reference: "ghcr.io/radu-matei/croc-hunter:${{ github.run_id }}"
+          manifest_file: spin.toml
+
+      - name: Deploy to Fermyon Cloud
+        uses: fermyon/actions/spin/deploy@v1
+        with:
+          manifest_file: spin.toml
+          fermyon_token: ${{ secrets.FERMYON_CLOUD_TOKEN }}
